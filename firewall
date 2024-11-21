@@ -45,9 +45,17 @@ echo 1 > /proc/sys/net/ipv4/conf/all/log_martians
 /sbin/iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
 /sbin/iptables -A INPUT -p tcp --dport 22 -m state --state NEW -j ACCEPT
  
+#OpenVPN
+/sbin/iptables -A INPUT -i eth0 -p udp --dport 1194 -m state --state NEW -j ACCEPT  #OpenVPN
+iptables -A INPUT -i tun+ -j ACCEPT
+iptables -A FORWARD -i tun+ -j ACCEPT
+iptables -A FORWARD -i tun+ -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth0 -o tun+ -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
+iptables -A OUTPUT -o tun+ -j ACCEPT
+
 # Allow certain ports to be accessible from the outside
-/sbin/iptables -A INPUT -p tcp --dport 25565 -m state --state NEW -j ACCEPT  #Minecraft
-/sbin/iptables -A INPUT -p tcp --dport 8123 -m state --state NEW -j ACCEPT   #Dynmap plugin
+/sbin/iptables -A INPUT -p tcp --dport ssh -m state --state NEW -j ACCEPT  # SSH
 
 # Other rules for future use if needed.  Uncomment to activate
 # /sbin/iptables -A INPUT -p tcp --dport 80 -m state --state NEW -j ACCEPT    # http
